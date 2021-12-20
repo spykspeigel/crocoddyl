@@ -52,12 +52,14 @@ void ContactModel3DTpl<Scalar>::calc(const boost::shared_ptr<ContactDataAbstract
                                      const Eigen::Ref<const VectorXs>&) {
   Data* d = static_cast<Data*>(data.get());
   pinocchio::updateFramePlacement(*state_->get_pinocchio().get(), *d->pinocchio, id_);
-  pinocchio::getFrameJacobian(*state_->get_pinocchio().get(), *d->pinocchio, id_, pinocchio::LOCAL, d->fJf);
+  //std::cout<<"I am stuck here0"<<"\n";
+  pinocchio::getFrameJacobian(*state_->get_pinocchio().get(), *d->pinocchio, id_, pinocchio::LOCAL, d->fJf.leftCols(state_->get_nv_l()));
   d->v = pinocchio::getFrameVelocity(*state_->get_pinocchio().get(), *d->pinocchio, id_);
   d->a = pinocchio::getFrameAcceleration(*state_->get_pinocchio().get(), *d->pinocchio, id_);
-
+  //std::cout<<"I am stuck here1"<<"\n";
   d->Jc = d->fJf.template topRows<3>();
   d->vw = d->v.angular();
+  //std::cout<<"I am stuck here2"<<"\n";
   d->vv = d->v.linear();
   d->a0 = d->a.linear() + d->vw.cross(d->vv);
 
@@ -74,29 +76,35 @@ void ContactModel3DTpl<Scalar>::calcDiff(const boost::shared_ptr<ContactDataAbst
                                          const Eigen::Ref<const VectorXs>&) {
   Data* d = static_cast<Data*>(data.get());
   const pinocchio::JointIndex joint = state_->get_pinocchio()->frames[d->frame].parent;
+  
+  const std::size_t nv_l = state_->get_nv_l();
   pinocchio::getJointAccelerationDerivatives(*state_->get_pinocchio().get(), *d->pinocchio, joint, pinocchio::LOCAL,
-                                             d->v_partial_dq, d->a_partial_dq, d->a_partial_dv, d->a_partial_da);
+                                             d->v_partial_dq.leftCols(nv_l), d->a_partial_dq.leftCols(nv_l), d->a_partial_dv.leftCols(nv_l), d->a_partial_da.leftCols(nv_l));
   const std::size_t nv = state_->get_nv();
   pinocchio::skew(d->vv, d->vv_skew);
   pinocchio::skew(d->vw, d->vw_skew);
   d->fXjdv_dq.noalias() = d->fXj * d->v_partial_dq;
   d->fXjda_dq.noalias() = d->fXj * d->a_partial_dq;
   d->fXjda_dv.noalias() = d->fXj * d->a_partial_dv;
-  d->da0_dx.leftCols(nv) = d->fXjda_dq.template topRows<3>();
-  d->da0_dx.leftCols(nv).noalias() += d->vw_skew * d->fXjdv_dq.template topRows<3>();
-  d->da0_dx.leftCols(nv).noalias() -= d->vv_skew * d->fXjdv_dq.template bottomRows<3>();
-  d->da0_dx.rightCols(nv) = d->fXjda_dv.template topRows<3>();
-  d->da0_dx.rightCols(nv).noalias() += d->vw_skew * d->Jc;
-  d->da0_dx.rightCols(nv).noalias() -= d->vv_skew * d->fJf.template bottomRows<3>();
-
+  //std::cout<<"I am stuck here3"<<"\n";
+  d->da0_dx.leftCols(nv_l) = d->fXjda_dq.template topRows<3>();
+  //std::cout<<"I am stuck here4"<<"\n";
+  d->da0_dx.leftCols(nv_l).noalias() += d->vw_skew * d->fXjdv_dq.template topRows<3>();
+  d->da0_dx.leftCols(nv_l).noalias() -= d->vv_skew * d->fXjdv_dq.template bottomRows<3>();
+  //std::cout<<"I am stuck here5"<<"\n";
+  d->da0_dx.middleCols(nv_l,nv_l) = d->fXjda_dv.template topRows<3>();
+  d->da0_dx.middleCols(nv_l,nv_l).noalias() += d->vw_skew * d->Jc;
+  d->da0_dx.middleCols(nv_l,nv_l).noalias() -= d->vv_skew * d->fJf.template bottomRows<3>();
+  //std::cout<<"I am stuck here6"<<"\n";
   if (gains_[0] != 0.) {
     d->oRf = d->pinocchio->oMf[id_].rotation();
-    d->da0_dx.leftCols(nv).noalias() += gains_[0] * d->oRf * d->Jc;
+    d->da0_dx.leftCols(nv_l).noalias() += gains_[0] * d->oRf * d->Jc;
   }
   if (gains_[1] != 0.) {
-    d->da0_dx.leftCols(nv).noalias() += gains_[1] * d->fXj.template topRows<3>() * d->v_partial_dq;
-    d->da0_dx.rightCols(nv).noalias() += gains_[1] * d->fXj.template topRows<3>() * d->a_partial_da;
+    d->da0_dx.leftCols(nv_l).noalias() += gains_[1] * d->fXj.template topRows<3>() * d->v_partial_dq;
+    d->da0_dx.middleCols(nv_l,nv_l).noalias() += gains_[1] * d->fXj.template topRows<3>() * d->a_partial_da;
   }
+    //std::cout<<"I am stuck here8"<<"\n";
 }
 
 template <typename Scalar>

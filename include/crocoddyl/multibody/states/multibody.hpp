@@ -81,6 +81,26 @@ class StateMultibodyTpl : public StateAbstractTpl<_Scalar> {
    */
   const boost::shared_ptr<PinocchioModel>& get_pinocchio() const;
 
+  /**
+   * @brief Return the dimension of the state tuple
+   */
+  std::size_t get_nq_l() const;
+
+  /**
+   * @brief Return the dimension of the tangent space of the state manifold
+   */
+  std::size_t get_nq_m() const;
+
+  /**
+   * @brief Return the dimension of the configuration tuple
+   */
+  std::size_t get_nv_l() const;
+
+  /**
+   * @brief Return the dimension of tangent space of the configuration manifold
+   */
+  std::size_t get_nv_m() const;
+
  protected:
   using Base::has_limits_;
   using Base::lb_;
@@ -89,6 +109,12 @@ class StateMultibodyTpl : public StateAbstractTpl<_Scalar> {
   using Base::nv_;
   using Base::nx_;
   using Base::ub_;
+
+  std::size_t nq_l_;   //!< link side configuration dimension
+  std::size_t nq_m_;  //!< motor side configuration dimension
+  std::size_t nv_l_;   //!< velocity dimension link side
+  std::size_t nv_m_;   //!< Velocity dimension motor side
+
 
  private:
   boost::shared_ptr<PinocchioModel> pinocchio_;  //!< Pinocchio model

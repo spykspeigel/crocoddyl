@@ -153,6 +153,8 @@ double SolverDDP::stoppingCriteria() {
     }
   }
   return stop_;
+  // stop_ = (d_[0] + 0.5 * d_[1])*(d_[0] + 0.5 * d_[1]);
+  // return stop_;
 }
 
 const Eigen::Vector2d& SolverDDP::expectedImprovement() {

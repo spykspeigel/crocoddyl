@@ -90,23 +90,29 @@ void ContactModelMultipleTpl<Scalar>::calc(const boost::shared_ptr<ContactDataMu
     throw_pretty("Invalid argument: "
                  << "it doesn't match the number of contact datas and models");
   }
-
+      // std::cout<<"hello 0101010\n";
   std::size_t nc = 0;
   const std::size_t nv = state_->get_nv();
+        // std::cout<<"hello\n the state.nv is"<<nv<<"\n";
   typename ContactModelContainer::iterator it_m, end_m;
   typename ContactDataContainer::iterator it_d, end_d;
   for (it_m = contacts_.begin(), end_m = contacts_.end(), it_d = data->contacts.begin(), end_d = data->contacts.end();
        it_m != end_m || it_d != end_d; ++it_m, ++it_d) {
     const boost::shared_ptr<ContactItem>& m_i = it_m->second;
+          // std::cout<<"hello0000\n";
     if (m_i->active) {
       const boost::shared_ptr<ContactDataAbstract>& d_i = it_d->second;
       assert_pretty(it_m->first == it_d->first, "it doesn't match the contact name between model and data ("
                                                     << it_m->first << " != " << it_d->first << ")");
 
       m_i->contact->calc(d_i, x);
+      // std::cout<<"hello1\n";
       const std::size_t nc_i = m_i->contact->get_nc();
+      // std::cout<<"hello2\n";
       data->a0.segment(nc, nc_i) = d_i->a0;
-      data->Jc.block(nc, 0, nc_i, nv) = d_i->Jc;
+      // std::cout<<"hello3\n";
+      data->Jc.block(nc, 0, nc_i, nv) = d_i->Jc.leftCols(18);
+      // std::cout<<nv<<"\n";
       nc += nc_i;
     }
   }
