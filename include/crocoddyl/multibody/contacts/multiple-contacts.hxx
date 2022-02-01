@@ -105,7 +105,7 @@ void ContactModelMultipleTpl<Scalar>::calc(const boost::shared_ptr<ContactDataMu
       m_i->contact->calc(d_i, x);
       const std::size_t nc_i = m_i->contact->get_nc();
       data->a0.segment(nc, nc_i) = d_i->a0;
-      data->Jc.block(nc, 0, nc_i, nv) = d_i->Jc;
+      data->Jc.block(nc, 0, nc_i, nv) = d_i->Jc.leftCols(18);
       nc += nc_i;
     }
   }
