@@ -90,7 +90,6 @@ void ContactModelMultipleTpl<Scalar>::calc(const boost::shared_ptr<ContactDataMu
     throw_pretty("Invalid argument: "
                  << "it doesn't match the number of contact datas and models");
   }
-
   std::size_t nc = 0;
   const std::size_t nv = state_->get_nv();
   typename ContactModelContainer::iterator it_m, end_m;
@@ -143,10 +142,10 @@ void ContactModelMultipleTpl<Scalar>::calcDiff(const boost::shared_ptr<ContactDa
 template <typename Scalar>
 void ContactModelMultipleTpl<Scalar>::updateAcceleration(const boost::shared_ptr<ContactDataMultiple>& data,
                                                          const VectorXs& dv) const {
-  if (static_cast<std::size_t>(dv.size()) != state_->get_nv()) {
-    throw_pretty("Invalid argument: "
-                 << "dv has wrong dimension (it should be " + std::to_string(state_->get_nv()) + ")");
-  }
+  // if (static_cast<std::size_t>(dv.size()) != state_->get_nv()) {
+  //   throw_pretty("Invalid argument: "
+  //                << "dv has wrong dimension (it should be " + std::to_string(state_->get_nv()) + ")");
+  // }
   data->dv = dv;
 }
 

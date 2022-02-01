@@ -87,7 +87,11 @@ void exposeStateMultibody() {
            ":param firstsecond: derivative w.r.t x or dx")
       .add_property("pinocchio",
                     bp::make_function(&StateMultibody::get_pinocchio, bp::return_value_policy<bp::return_by_value>()),
-                    "pinocchio model");
+                    "pinocchio model")
+      .add_property("nq_m", bp::make_function(&StateMultibody::get_nq_m), "dimension of configuration vector of motor side")
+      .add_property("nv_m", bp::make_function(&StateMultibody::get_nv_m), "dimension of velocity vector of motor side")
+      .add_property("nq_l", bp::make_function(&StateMultibody::get_nq_l),"dimension of the configuration of link side")
+      .add_property("nv_l", bp::make_function(&StateMultibody::get_nv_l), "dimension of velocity of link side ");
 }
 
 }  // namespace python
