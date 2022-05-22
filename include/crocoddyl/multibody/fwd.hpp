@@ -304,6 +304,10 @@ class CoPSupportTpl;
 template <typename Scalar>
 class StateMultibodyTpl;
 
+// soft state
+template <typename Scalar>
+class StateSoftMultibodyTpl;
+
 // data collector
 template <typename Scalar>
 struct DataCollectorMultibodyTpl;
@@ -488,6 +492,8 @@ typedef ContactModel6DTpl<double> ContactModel6D;
 typedef ContactData6DTpl<double> ContactData6D;
 
 typedef StateMultibodyTpl<double> StateMultibody;
+typedef StateSoftMultibodyTpl<double> StateSoftMultibody;
+
 
 typedef DataCollectorMultibodyTpl<double> DataCollectorMultibody;
 typedef DataCollectorActMultibodyTpl<double> DataCollectorActMultibody;
