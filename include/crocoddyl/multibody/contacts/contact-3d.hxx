@@ -51,12 +51,13 @@ template <typename Scalar>
 void ContactModel3DTpl<Scalar>::calc(const boost::shared_ptr<ContactDataAbstract>& data,
                                      const Eigen::Ref<const VectorXs>&) {
   Data* d = static_cast<Data*>(data.get());
+  const std::size_t nv_l = 18;
   pinocchio::updateFramePlacement(*state_->get_pinocchio().get(), *d->pinocchio, id_);
   pinocchio::getFrameJacobian(*state_->get_pinocchio().get(), *d->pinocchio, id_, pinocchio::LOCAL, d->fJf);
   d->v = pinocchio::getFrameVelocity(*state_->get_pinocchio().get(), *d->pinocchio, id_);
   d->a = pinocchio::getFrameAcceleration(*state_->get_pinocchio().get(), *d->pinocchio, id_);
 
-  d->Jc = d->fJf.template topRows<3>();
+  d->Jc.leftCols(nv_l) = d->fJf.leftCols(nv_l).template topRows<3>();
   d->vw = d->v.angular();
   d->vv = d->v.linear();
   d->a0 = d->a.linear() + d->vw.cross(d->vv);
