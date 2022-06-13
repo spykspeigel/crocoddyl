@@ -68,7 +68,7 @@ class ActionModelImpulseFwdDynamicsTpl : public ActionModelAbstractTpl<_Scalar> 
   typedef ActionDataImpulseFwdDynamicsTpl<Scalar> Data;
   typedef MathBaseTpl<Scalar> MathBase;
   typedef CostModelSumTpl<Scalar> CostModelSum;
-  typedef StateMultibodyTpl<Scalar> StateMultibody;
+  typedef StateSoftMultibodyTpl<Scalar> StateSoftMultibody;
   typedef ActionDataAbstractTpl<Scalar> ActionDataAbstract;
   typedef ImpulseModelMultipleTpl<Scalar> ImpulseModelMultiple;
   typedef typename MathBase::VectorXs VectorXs;

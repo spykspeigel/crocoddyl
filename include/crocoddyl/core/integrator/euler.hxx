@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // BSD 3-Clause License
 //
-// Copyright (C) 2019-2021, LAAS-CNRS, University of Edinburgh, University of Oxford
+// Copyright (C) 2019-2022, 2019-2021, LAAS-CNRS, University of Edinburgh, University of Oxford, University of Pisa
 // Copyright note valid unless otherwise stated in individual files.
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,15 +40,25 @@ void IntegratedActionModelEulerTpl<Scalar>::calc(const boost::shared_ptr<ActionD
     throw_pretty("Invalid argument: "
                  << "u has wrong dimension (it should be " + std::to_string(nu_) + ")");
   }
+  // const std::size_t nv = differential_->get_state()->get_nv();
+  // const std::size_t nq_l = differential_->get_state()->get_nq_l();
+  // const std::size_t nv_l = differential_->get_state()->get_nv_l();
+  // const std::size_t nv_m = differential_->get_state()->get_nv_m();
   const std::size_t nv = differential_->get_state()->get_nv();
+  const std::size_t nq_l = 19;
+  const std::size_t nv_l = 18;
+  const std::size_t nv_m = 12;
   Data* d = static_cast<Data*>(data.get());
-  const Eigen::VectorBlock<const Eigen::Ref<const VectorXs>, Eigen::Dynamic> v = x.tail(nv);
+  //const Eigen::VectorBlock<const Eigen::Ref<const VectorXs>, Eigen::Dynamic> v<< x.segment(nq_l,nv_l),x.tail(nv_m);
 
   control_->calc(d->control, 0., u);
   differential_->calc(d->differential, x, d->control->w);
   const VectorXs& a = d->differential->xout;
-  d->dx.head(nv).noalias() = v * time_step_ + a * time_step2_;
-  d->dx.tail(nv).noalias() = a * time_step_;
+  d->dx.head(nv_l).noalias() = x.segment(nq_l,nv_l)* time_step_ + a.head(nv_l)*time_step2_;
+
+  d->dx.segment(nv_l,nv_l).noalias() = a.head(nv_l) * time_step_;
+  d->dx.segment(nv_l+nv_l,nv_m).noalias() =  x.tail(nv_m)*time_step_  + a.tail(nv_m)*time_step2_;
+  d->dx.tail(nv_m).noalias() = a.tail(nv_m) * time_step_;
   differential_->get_state()->integrate(x, d->dx, d->xnext);
   d->cost = time_step_ * d->differential->cost;
   if (with_cost_residual_) {
@@ -88,17 +98,31 @@ void IntegratedActionModelEulerTpl<Scalar>::calcDiff(const boost::shared_ptr<Act
 
   const std::size_t nv = state_->get_nv();
   Data* d = static_cast<Data*>(data.get());
-
+  const std::size_t nv_l = 18;
+  const std::size_t nv_m = 12;
   control_->calc(d->control, 0., u);
   differential_->calcDiff(d->differential, x, d->control->w);
   const MatrixXs& da_dx = d->differential->Fx;
   const MatrixXs& da_du = d->differential->Fu;
   control_->multiplyByJacobian(d->control, da_du, d->da_du);
-  d->Fx.topRows(nv).noalias() = da_dx * time_step2_;
-  d->Fx.bottomRows(nv).noalias() = da_dx * time_step_;
-  d->Fx.topRightCorner(nv, nv).diagonal().array() += Scalar(time_step_);
-  d->Fu.topRows(nv).noalias() = time_step2_ * d->da_du;
-  d->Fu.bottomRows(nv).noalias() = time_step_ * d->da_du;
+
+
+  d->Fx.topRows(nv_l).noalias() = da_dx.topRows(nv_l) * time_step2_;
+  d->Fx.middleRows(nv_l,nv_l).noalias() = da_dx.topRows(nv_l) * time_step_;
+  d->Fx.middleRows(nv_l+nv_l,nv_m).noalias() = da_dx.bottomRows(nv_m) * time_step2_;
+  d->Fx.bottomRows(nv_m).noalias() = da_dx.bottomRows(nv_m) * time_step_;
+
+  d->Fx.block(0,nv_l,nv_l, nv_l).diagonal().array() += Scalar(time_step_);
+  d->Fx.block(2*nv_l,2*nv_l+nv_m,nv_m, nv_m).diagonal().array() += Scalar(time_step_);
+
+  // d->Fu.topRows(nv).noalias() = time_step2_ * d->da_du;
+  // d->Fu.bottomRows(nv).noalias() = time_step_ * d->da_du;
+  d->Fu.topRows(nv_l).noalias() = da_du.topRows(nv_l) * time_step2_;
+  d->Fu.middleRows(nv_l,nv_l).noalias() = da_du.topRows(nv_l) * time_step_;
+  d->Fu.middleRows(nv_l+nv_l,nv_m).noalias() = da_du.bottomRows(nv_m) * time_step2_;
+  d->Fu.bottomRows(nv_m).noalias() = da_du.bottomRows(nv_m) * time_step_;
+  
+  
   state_->JintegrateTransport(x, d->dx, d->Fx, second);
   state_->Jintegrate(x, d->dx, d->Fx, d->Fx, first, addto);
   state_->JintegrateTransport(x, d->dx, d->Fu, second);

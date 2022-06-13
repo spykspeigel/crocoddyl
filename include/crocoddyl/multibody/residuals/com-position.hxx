@@ -40,7 +40,7 @@ void ResidualModelCoMPositionTpl<Scalar>::calcDiff(const boost::shared_ptr<Resid
 
   // Compute the derivatives of the frame placement
   const std::size_t nv = state_->get_nv();
-  data->Rx.leftCols(nv) = d->pinocchio->Jcom;
+  data->Rx.leftCols(18) = d->pinocchio->Jcom;
 }
 
 template <typename Scalar>

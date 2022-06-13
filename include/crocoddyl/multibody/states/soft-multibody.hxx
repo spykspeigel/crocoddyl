@@ -122,7 +122,9 @@ void StateSoftMultibodyTpl<Scalar>::Jdiff(const Eigen::Ref<const VectorXs>& x0, 
 
     pinocchio::dDifference(*pinocchio_.get(), x0.head(nq_l_), x1.head(nq_l_), Jfirst.topLeftCorner(nv_l_, nv_l_),
                            pinocchio::ARG0);
-    Jfirst.bottomRightCorner(ndx_-nv_l_, ndx_-nv_l_).diagonal().array() = (Scalar)-1;
+    Jfirst.block(nv_l_,nv_l_,nv_l_, nv_l_).diagonal().array() = (Scalar)-1;
+    Jfirst.bottomRightCorner(nv_m_, nv_m_).diagonal().array() = (Scalar)-1;
+    
   } else if (firstsecond == second) {
     if (static_cast<std::size_t>(Jsecond.rows()) != ndx_ || static_cast<std::size_t>(Jsecond.cols()) != ndx_) {
       throw_pretty("Invalid argument: "
@@ -131,7 +133,8 @@ void StateSoftMultibodyTpl<Scalar>::Jdiff(const Eigen::Ref<const VectorXs>& x0, 
     }
     pinocchio::dDifference(*pinocchio_.get(), x0.head(nq_l_), x1.head(nq_l_), Jsecond.topLeftCorner(nv_l_, nv_l_),
                            pinocchio::ARG1);
-    Jsecond.bottomRightCorner(ndx_-nv_l_, ndx_-nv_l_).diagonal().array() = (Scalar)1;
+    Jsecond.block(nv_l_,nv_l_,nv_l_, nv_l_).diagonal().array() = (Scalar)1;
+    Jsecond.bottomRightCorner(nv_m_, nv_m_).diagonal().array() = (Scalar)1;
   } else {  // computing both
     if (static_cast<std::size_t>(Jfirst.rows()) != ndx_ || static_cast<std::size_t>(Jfirst.cols()) != ndx_) {
       throw_pretty("Invalid argument: "
@@ -147,8 +150,10 @@ void StateSoftMultibodyTpl<Scalar>::Jdiff(const Eigen::Ref<const VectorXs>& x0, 
                            pinocchio::ARG0);
     pinocchio::dDifference(*pinocchio_.get(), x0.head(nq_l_), x1.head(nq_l_), Jsecond.topLeftCorner(nv_l_, nv_l_),
                            pinocchio::ARG1);
-    Jfirst.bottomRightCorner(ndx_-nv_l_, ndx_-nv_l_).diagonal().array() = (Scalar)-1;
-    Jsecond.bottomRightCorner(ndx_-nv_l_, ndx_-nv_l_).diagonal().array() = (Scalar)1;
+    Jfirst.block(nv_l_,nv_l_,nv_l_, nv_l_).diagonal().array() = (Scalar)-1;
+    Jfirst.bottomRightCorner(nv_m_, nv_m_).diagonal().array() = (Scalar)-1;    
+    Jsecond.block(nv_l_,nv_l_,nv_l_, nv_l_).diagonal().array() = (Scalar)1;
+    Jsecond.bottomRightCorner(nv_m_, nv_m_).diagonal().array() = (Scalar)1;
   }
 }
 
@@ -168,17 +173,23 @@ void StateSoftMultibodyTpl<Scalar>::Jintegrate(const Eigen::Ref<const VectorXs>&
       case setto:
         pinocchio::dIntegrate(*pinocchio_.get(), x.head(nq_l_), dx.head(nv_l_), Jfirst.topLeftCorner(nv_l_, nv_l_),
                               pinocchio::ARG0, pinocchio::SETTO);
-        Jfirst.bottomRightCorner(ndx_-nv_l_, ndx_-nv_l_).diagonal().array() = (Scalar)1;
+        Jfirst.block(nv_l_,nv_l_,nv_l_, nv_l_).diagonal().array() = (Scalar)1;
+        Jfirst.block(2*nv_l_,2*nv_l_,nv_m_, nv_m_).diagonal().array() = (Scalar)1;
+        Jfirst.bottomRightCorner(nv_m_, nv_m_).diagonal().array() = (Scalar)1;
         break;
       case addto:
         pinocchio::dIntegrate(*pinocchio_.get(), x.head(nq_l_), dx.head(nv_l_), Jfirst.topLeftCorner(nv_l_, nv_l_),
                               pinocchio::ARG0, pinocchio::ADDTO);
-        Jfirst.bottomRightCorner(ndx_-nv_l_, ndx_-nv_l_).diagonal().array() += (Scalar)1;
+        Jfirst.block(nv_l_,nv_l_,nv_l_, nv_l_).diagonal().array() += (Scalar)1;
+        Jfirst.block(2*nv_l_,2*nv_l_,nv_m_, nv_m_).diagonal().array() += (Scalar)1;
+        Jfirst.bottomRightCorner(nv_m_, nv_m_).diagonal().array() += (Scalar)1;
         break;
       case rmfrom:
         pinocchio::dIntegrate(*pinocchio_.get(), x.head(nq_l_), dx.head(nv_l_), Jfirst.topLeftCorner(nv_l_, nv_l_),
                               pinocchio::ARG0, pinocchio::RMTO);
-        Jfirst.bottomRightCorner(ndx_-nv_l_, ndx_-nv_l_).diagonal().array() -= (Scalar)1;
+        Jfirst.block(nv_l_,nv_l_,nv_l_, nv_l_).diagonal().array() -= (Scalar)1;
+        Jfirst.block(2*nv_l_,2*nv_l_,nv_m_, nv_m_).diagonal().array() -= (Scalar)1;
+        Jfirst.bottomRightCorner(nv_m_, nv_m_).diagonal().array() -= (Scalar)1;
         break;
       default:
         throw_pretty("Invalid argument: allowed operators: setto, addto, rmfrom");
@@ -195,17 +206,23 @@ void StateSoftMultibodyTpl<Scalar>::Jintegrate(const Eigen::Ref<const VectorXs>&
       case setto:
         pinocchio::dIntegrate(*pinocchio_.get(), x.head(nq_l_), dx.head(nv_l_), Jsecond.topLeftCorner(nv_l_, nv_l_),
                               pinocchio::ARG1, pinocchio::SETTO);
-        Jsecond.bottomRightCorner(ndx_-nv_l_, ndx_-nv_l_).diagonal().array() = (Scalar)1;
+        Jsecond.block(nv_l_,nv_l_,nv_l_, nv_l_).diagonal().array() = (Scalar)1;
+        Jsecond.block(2*nv_l_,2*nv_l_,nv_m_, nv_m_).diagonal().array() = (Scalar)1;
+        Jsecond.bottomRightCorner(nv_m_, nv_m_).diagonal().array() = (Scalar)1;
         break;
       case addto:
         pinocchio::dIntegrate(*pinocchio_.get(), x.head(nq_l_), dx.head(nv_l_), Jsecond.topLeftCorner(nv_l_, nv_l_),
                               pinocchio::ARG1, pinocchio::ADDTO);
-        Jsecond.bottomRightCorner(ndx_-nv_l_, ndx_-nv_l_).diagonal().array() += (Scalar)1;
+        Jsecond.block(nv_l_,nv_l_,nv_l_, nv_l_).diagonal().array() += (Scalar)1;
+        Jsecond.block(2*nv_l_,2*nv_l_,nv_m_, nv_m_).diagonal().array() += (Scalar)1;
+        Jsecond.bottomRightCorner(nv_m_, nv_m_).diagonal().array() += (Scalar)1;
         break;
       case rmfrom:
         pinocchio::dIntegrate(*pinocchio_.get(), x.head(nq_l_), dx.head(nv_l_), Jsecond.topLeftCorner(nv_l_, nv_l_),
                               pinocchio::ARG1, pinocchio::RMTO);
-        Jsecond.bottomRightCorner(ndx_-nv_l_, ndx_-nv_l_).diagonal().array() -= (Scalar)1;
+        Jsecond.block(nv_l_,nv_l_,nv_l_, nv_l_).diagonal().array() -= (Scalar)1;
+        Jsecond.block(2*nv_l_,2*nv_l_,nv_m_, nv_m_).diagonal().array() -= (Scalar)1;
+        Jsecond.bottomRightCorner(nv_m_, nv_m_).diagonal().array() -= (Scalar)1;
         break;
       default:
         throw_pretty("Invalid argument: allowed operators: setto, addto, rmfrom");

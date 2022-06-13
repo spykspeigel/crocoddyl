@@ -25,19 +25,20 @@ template <typename Scalar>
 void ImpulseModel3DTpl<Scalar>::calc(const boost::shared_ptr<ImpulseDataAbstract>& data,
                                      const Eigen::Ref<const VectorXs>&) {
   boost::shared_ptr<Data> d = boost::static_pointer_cast<Data>(data);
-
-  pinocchio::getFrameJacobian(*state_->get_pinocchio().get(), *d->pinocchio, frame_, pinocchio::LOCAL, d->fJf);
-  d->Jc = d->fJf.template topRows<3>();
+  const std::size_t nv_l = 18;
+  pinocchio::getFrameJacobian(*state_->get_pinocchio().get(), *d->pinocchio, frame_, pinocchio::LOCAL, d->fJf.leftCols(nv_l));
+    d->Jc.leftCols(nv_l) = d->fJf.leftCols(nv_l).template topRows<3>();
 }
 
 template <typename Scalar>
 void ImpulseModel3DTpl<Scalar>::calcDiff(const boost::shared_ptr<ImpulseDataAbstract>& data,
                                          const Eigen::Ref<const VectorXs>&) {
   boost::shared_ptr<Data> d = boost::static_pointer_cast<Data>(data);
+  const std::size_t nv_l = 18;
   const pinocchio::JointIndex joint = state_->get_pinocchio()->frames[d->frame].parent;
   pinocchio::getJointVelocityDerivatives(*state_->get_pinocchio().get(), *d->pinocchio, joint, pinocchio::LOCAL,
-                                         d->v_partial_dq, d->v_partial_dv);
-  d->dv0_dq.noalias() = d->fXj.template topRows<3>() * d->v_partial_dq;
+                                         d->v_partial_dq.leftCols(nv_l), d->v_partial_dv.leftCols(nv_l));
+  d->dv0_dq.leftCols(nv_l).noalias() = d->fXj.leftCols(nv_l).template topRows<3>() * d->v_partial_dq.leftCols(nv_l);
 }
 
 template <typename Scalar>

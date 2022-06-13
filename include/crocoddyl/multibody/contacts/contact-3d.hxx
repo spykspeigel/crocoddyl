@@ -52,8 +52,9 @@ void ContactModel3DTpl<Scalar>::calc(const boost::shared_ptr<ContactDataAbstract
                                      const Eigen::Ref<const VectorXs>&) {
   Data* d = static_cast<Data*>(data.get());
   const std::size_t nv_l = 18;
+    // std::cout<<"I am here in calc"<<"\n";
   pinocchio::updateFramePlacement(*state_->get_pinocchio().get(), *d->pinocchio, id_);
-  pinocchio::getFrameJacobian(*state_->get_pinocchio().get(), *d->pinocchio, id_, pinocchio::LOCAL, d->fJf);
+  pinocchio::getFrameJacobian(*state_->get_pinocchio().get(), *d->pinocchio, id_, pinocchio::LOCAL, d->fJf.leftCols(nv_l));
   d->v = pinocchio::getFrameVelocity(*state_->get_pinocchio().get(), *d->pinocchio, id_);
   d->a = pinocchio::getFrameAcceleration(*state_->get_pinocchio().get(), *d->pinocchio, id_);
 
@@ -76,6 +77,7 @@ void ContactModel3DTpl<Scalar>::calcDiff(const boost::shared_ptr<ContactDataAbst
   Data* d = static_cast<Data*>(data.get());
   const pinocchio::JointIndex joint = state_->get_pinocchio()->frames[d->frame].parent;
   const std::size_t nv_l = 18;
+  // std::cout<<"I am here in calcdiff"<<"\n";
   pinocchio::getJointAccelerationDerivatives(*state_->get_pinocchio().get(), *d->pinocchio, joint, pinocchio::LOCAL,
                                              d->v_partial_dq.leftCols(nv_l), d->a_partial_dq.leftCols(nv_l), d->a_partial_dv.leftCols(nv_l), d->a_partial_da.leftCols(nv_l));
   const std::size_t nv = state_->get_nv();

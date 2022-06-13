@@ -62,8 +62,9 @@ void ResidualModelFrameVelocityTpl<Scalar>::calcDiff(const boost::shared_ptr<Res
   // Get the partial derivatives of the local frame velocity
   Data* d = static_cast<Data*>(data.get());
   const std::size_t nv = state_->get_nv();
-  pinocchio::getFrameVelocityDerivatives(*pin_model_.get(), *d->pinocchio, id_, type_, data->Rx.leftCols(nv),
-                                         data->Rx.rightCols(nv));
+  const std::size_t nv_l = 18;
+  pinocchio::getFrameVelocityDerivatives(*pin_model_.get(), *d->pinocchio, id_, type_, data->Rx.leftCols(nv_l),
+                                         data->Rx.middleCols(nv_l,nv_l));
 }
 
 template <typename Scalar>
