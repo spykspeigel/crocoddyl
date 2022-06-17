@@ -46,9 +46,8 @@ void ActionModelImpulseFwdDynamicsTpl<Scalar>::calc(const boost::shared_ptr<Acti
                  << "x has wrong dimension (it should be " + std::to_string(state_->get_nx()) + ")");
   }
 
-  // const std::size_t nq_l = state_->get_nq_l();
-  // const std::size_t nv_l = state_->get_nv_l();
-  // const std::size_t nv_m = state_->get_nv_m();
+  const std::size_t nq = state_->get_nq();
+  const std::size_t nv = state_->get_nv();
   const std::size_t nq_l = 19;
   const std::size_t nv_l = 18;
   const std::size_t nq_m = 12;
@@ -57,7 +56,6 @@ void ActionModelImpulseFwdDynamicsTpl<Scalar>::calc(const boost::shared_ptr<Acti
   Data* d = static_cast<Data*>(data.get());
   const Eigen::VectorBlock<const Eigen::Ref<const VectorXs>, Eigen::Dynamic> q = x.head(nq_l);
   const Eigen::VectorBlock<const Eigen::Ref<const VectorXs>, Eigen::Dynamic> v = x.segment(nq_l,nv_l);
-
   // Computing the forward dynamics with the holonomic constraints defined by the contact model
   pinocchio::computeAllTerms(pinocchio_, d->pinocchio, q, v);
   pinocchio::updateFramePlacements(pinocchio_, d->pinocchio);
@@ -66,8 +64,7 @@ void ActionModelImpulseFwdDynamicsTpl<Scalar>::calc(const boost::shared_ptr<Acti
   if (!with_armature_) {
     d->pinocchio.M.diagonal() += armature_;
   }
-  impulses_->calc(d->multibody.impulses, x.head(nq_l+nv_l));
-
+  impulses_->calc(d->multibody.impulses, x);
 #ifndef NDEBUG
   Eigen::FullPivLU<MatrixXs> Jc_lu(d->multibody.impulses->Jc.topRows(nc));
 
@@ -80,12 +77,13 @@ void ActionModelImpulseFwdDynamicsTpl<Scalar>::calc(const boost::shared_ptr<Acti
                              JMinvJt_damping_);
   d->xnext.head(nq_l) = q;
   d->xnext.segment(nq_l,nv_l) = d->pinocchio.dq_after;
-  VectorXs vnext;
-  vnext << d->pinocchio.dq_after,d->xnext.tail(nv_m);
+  d->xnext.tail(nq_m+nv_m) = x.tail(2*nq_m);
+  VectorXs vnext(nv_l+nv_m);
+  vnext.head(nv_l) = d->pinocchio.dq_after;
+  vnext.tail(nv_m) = d->xnext.tail(nv_m);
+
   impulses_->updateVelocity(d->multibody.impulses, vnext);
   impulses_->updateForce(d->multibody.impulses, d->pinocchio.impulse_c);
-
-  d->xnext.tail(nq_m+nv_m) = x.tail(2*nq_m);
   // Computing the cost value and residuals
   costs_->calc(d->costs, x, u);
   d->cost = d->costs->cost;
@@ -100,9 +98,8 @@ void ActionModelImpulseFwdDynamicsTpl<Scalar>::calcDiff(const boost::shared_ptr<
                  << "x has wrong dimension (it should be " + std::to_string(state_->get_nx()) + ")");
   }
 
-  // const std::size_t nv_l = state_->get_nv_l();
-  // const std::size_t nv_m = state_->get_nv_m();
-  const std::size_t nq_l = 19;
+  const std::size_t nv = state_->get_nv();
+    const std::size_t nq_l = 19;
   const std::size_t nv_l = 18;
   const std::size_t nv_m = 12;
   const std::size_t nc = impulses_->get_nc();
@@ -118,7 +115,7 @@ void ActionModelImpulseFwdDynamicsTpl<Scalar>::calcDiff(const boost::shared_ptr<
   d->Kinv.resize(nv_l + nc, nv_l + nc);
   pinocchio::computeRNEADerivatives(pinocchio_, d->pinocchio, q, d->vnone, d->pinocchio.dq_after - v,
                                     d->multibody.impulses->fext);
-  pinocchio::computeGeneralizedGravityDerivatives(pinocchio_, d->pinocchio, q, d->dgrav_dq);
+  pinocchio::computeGeneralizedGravityDerivatives(pinocchio_, d->pinocchio, q, d->dgrav_dq.leftCols(nv_l));
   pinocchio::getKKTContactDynamicMatrixInverse(pinocchio_, d->pinocchio, d->multibody.impulses->Jc.topRows(nc).leftCols(nv_l),
                                                d->Kinv);
 
@@ -129,8 +126,9 @@ void ActionModelImpulseFwdDynamicsTpl<Scalar>::calcDiff(const boost::shared_ptr<
   Eigen::Block<MatrixXs> a_partial_da = d->Kinv.topRightCorner(nv_l, nc);
   Eigen::Block<MatrixXs> f_partial_dtau = d->Kinv.bottomLeftCorner(nc, nv_l);
   Eigen::Block<MatrixXs> f_partial_da = d->Kinv.bottomRightCorner(nc, nc);
-  MatrixXs dfx;
-  dfx << d->Fx.middleRows(nv_l,nv_l), d->Fx.bottomRows(nv_m);
+  MatrixXs dfx(nv_l+nv_m,state_->get_ndx());
+  dfx.topRows(nv_l) = d->Fx.middleRows(nv_l,nv_l);
+  dfx.bottomRows(nv_m) = d->Fx.bottomRows(nv_m);
   d->pinocchio.dtau_dq -= d->dgrav_dq;
   d->Fx.topLeftCorner(nv_l, nv_l).setIdentity();
   d->Fx.topRightCorner(nq_l+nv_l,nq_l+nv_l).setZero();
@@ -146,7 +144,7 @@ void ActionModelImpulseFwdDynamicsTpl<Scalar>::calcDiff(const boost::shared_ptr<
     impulses_->updateVelocityDiff(d->multibody.impulses, dfx);
     impulses_->updateForceDiff(d->multibody.impulses, d->df_dx.topRows(nc));
   }
-  costs_->calcDiff(d->costs, x, u);
+    costs_->calcDiff(d->costs, x, u);
 }
 
 template <typename Scalar>
