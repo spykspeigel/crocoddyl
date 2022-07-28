@@ -45,9 +45,9 @@ void IntegratedActionModelEulerTpl<Scalar>::calc(const boost::shared_ptr<ActionD
   // const std::size_t nv_l = differential_->get_state()->get_nv_l();
   // const std::size_t nv_m = differential_->get_state()->get_nv_m();
   const std::size_t nv = differential_->get_state()->get_nv();
-  const std::size_t nq_l = 19;
-  const std::size_t nv_l = 18;
-  const std::size_t nv_m = 12;
+  const std::size_t nq_l = 3;
+  const std::size_t nv_l = 3;
+  const std::size_t nv_m = 2;
   Data* d = static_cast<Data*>(data.get());
   //const Eigen::VectorBlock<const Eigen::Ref<const VectorXs>, Eigen::Dynamic> v<< x.segment(nq_l,nv_l),x.tail(nv_m);
 
@@ -98,8 +98,8 @@ void IntegratedActionModelEulerTpl<Scalar>::calcDiff(const boost::shared_ptr<Act
 
   const std::size_t nv = state_->get_nv();
   Data* d = static_cast<Data*>(data.get());
-  const std::size_t nv_l = 18;
-  const std::size_t nv_m = 12;
+  const std::size_t nv_l = 3;
+  const std::size_t nv_m = 2;
   control_->calc(d->control, 0., u);
   differential_->calcDiff(d->differential, x, d->control->w);
   const MatrixXs& da_dx = d->differential->Fx;

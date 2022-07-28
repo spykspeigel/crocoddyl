@@ -14,23 +14,23 @@ namespace crocoddyl {
 
 template <typename Scalar>
 StateSoftMultibodyTpl<Scalar>::StateSoftMultibodyTpl(boost::shared_ptr<PinocchioModel> model)
-    : Base(model), pinocchio_(model), x0_(VectorXs::Zero(3*(model->nv)-12 + model->nq)){
+    : Base(model), pinocchio_(model), x0_(VectorXs::Zero(3*(model->nv)-model->joints[1].nv() + model->nq)){
 
   x0_.head(model->nq) = pinocchio::neutral(*pinocchio_.get());
 
   // Define internally the limits of the first joint
 
   const std::size_t nq0 = model->joints[1].nq();
-
-  nq_m_ = model->nv-6;
-  nv_m_ = model->nv-6;
+  const std::size_t nv0 =model->joints[1].nv();
+  nq_m_ = model->nv-nv0;
+  nv_m_ = model->nv-nv0;
   nv_l_ = model->nv;
   nq_l_ = model->nq;
-  ndx_ = 4 * model->nv-12;
-  nx_ = 3*(model->nv)-12 + model->nq;
+  ndx_ = 4 * model->nv-2*nv0;
+  nx_ = 3*(model->nv)-2*nv0 + model->nq;
   nq_ =  nq_m_ + nq_l_;
   nv_ =  nv_m_ + nv_l_;
-
+  // StateMultibody_ = boost::make_shared<StateMultibodyTpl<Scalar>> (pinocchio_);
   lb_.head(nq0) = -std::numeric_limits<Scalar>::infinity() * VectorXs::Ones(nq0);
   ub_.head(nq0) = std::numeric_limits<Scalar>::infinity() * VectorXs::Ones(nq0);
   lb_.segment(nq0, nq_l_ - nq0) = pinocchio_->lowerPositionLimit.tail(nq_l_ - nq0);
@@ -38,11 +38,10 @@ StateSoftMultibodyTpl<Scalar>::StateSoftMultibodyTpl(boost::shared_ptr<Pinocchio
   lb_.segment(nq_l_, nv_l_) = -pinocchio_->velocityLimit;
   ub_.segment(nq_l_, nv_l_) = pinocchio_->velocityLimit;
   Base::update_has_limits();
-  
 }
 
 template <typename Scalar>
-StateSoftMultibodyTpl<Scalar>::StateSoftMultibodyTpl() : Base(), x0_(VectorXs::Zero(0)) {}
+StateSoftMultibodyTpl<Scalar>::StateSoftMultibodyTpl() : Base(), x0_(VectorXs::Zero(0)){}//, StateMultibody_() {}
 
 template <typename Scalar>
 StateSoftMultibodyTpl<Scalar>::~StateSoftMultibodyTpl() {}
@@ -272,5 +271,9 @@ template <typename Scalar>
 const boost::shared_ptr<pinocchio::ModelTpl<Scalar> >& StateSoftMultibodyTpl<Scalar>::get_pinocchio() const {
   return pinocchio_;
 }
+// template <typename Scalar>
+// const boost::shared_ptr<StateMultibodyTpl<Scalar> >& StateSoftMultibodyTpl<Scalar>::get_statemultibody() const {
+//   return StateMultibody_;
+// }
 
 }  // namespace crocoddyl
