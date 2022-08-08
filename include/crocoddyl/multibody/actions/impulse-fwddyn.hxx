@@ -48,10 +48,10 @@ void ActionModelImpulseFwdDynamicsTpl<Scalar>::calc(const boost::shared_ptr<Acti
 
   const std::size_t nq = state_->get_nq();
   const std::size_t nv = state_->get_nv();
-  const std::size_t nq_l = 19;
-  const std::size_t nv_l = 18;
-  const std::size_t nq_m = 12;
-  const std::size_t nv_m = 12;
+  const std::size_t nq_l = 3;
+  const std::size_t nv_l = 3;
+  const std::size_t nq_m = 2;
+  const std::size_t nv_m = 2;
   const std::size_t nc = impulses_->get_nc();
   Data* d = static_cast<Data*>(data.get());
   const Eigen::VectorBlock<const Eigen::Ref<const VectorXs>, Eigen::Dynamic> q = x.head(nq_l);
@@ -99,9 +99,9 @@ void ActionModelImpulseFwdDynamicsTpl<Scalar>::calcDiff(const boost::shared_ptr<
   }
 
   const std::size_t nv = state_->get_nv();
-    const std::size_t nq_l = 19;
-  const std::size_t nv_l = 18;
-  const std::size_t nv_m = 12;
+    const std::size_t nq_l = 3;
+  const std::size_t nv_l = 3;
+  const std::size_t nv_m = 2;
   const std::size_t nc = impulses_->get_nc();
   const Eigen::VectorBlock<const Eigen::Ref<const VectorXs>, Eigen::Dynamic> q = x.head(nq_l);
   const Eigen::VectorBlock<const Eigen::Ref<const VectorXs>, Eigen::Dynamic> v = x.segment(nq_l,nv_l);

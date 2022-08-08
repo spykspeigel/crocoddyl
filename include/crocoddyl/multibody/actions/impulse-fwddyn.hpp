@@ -210,11 +210,11 @@ struct ActionDataImpulseFwdDynamicsTpl : public ActionDataAbstractTpl<_Scalar> {
         pinocchio(pinocchio::DataTpl<Scalar>(model->get_pinocchio())),
         multibody(&pinocchio, model->get_impulses()->createData(&pinocchio)),
         costs(model->get_costs()->createData(&multibody)),
-        vnone(model->get_state()->get_nv()-12),
+        vnone(model->get_state()->get_nv()-2),
         Kinv(model->get_state()->get_nv() + model->get_impulses()->get_nc_total(),
              model->get_state()->get_nv() + model->get_impulses()->get_nc_total()),
         df_dx(model->get_impulses()->get_nc_total(), model->get_state()->get_ndx()),
-        dgrav_dq(model->get_state()->get_nv()-12, model->get_state()->get_nv()) {
+        dgrav_dq(model->get_state()->get_nv()-2, model->get_state()->get_nv()) {
     costs->shareMemory(this);
     vnone.setZero();
     Kinv.setZero();

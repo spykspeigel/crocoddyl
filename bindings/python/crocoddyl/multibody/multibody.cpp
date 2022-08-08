@@ -73,6 +73,7 @@ void exposeMultibody() {
   exposeContact2D();
   exposeContact3D();
   exposeContact6D();
+  exposeImpulse2D();
   exposeImpulse3D();
   exposeImpulse6D();
 }
