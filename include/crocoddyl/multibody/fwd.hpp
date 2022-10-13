@@ -304,6 +304,10 @@ class CoPSupportTpl;
 template <typename Scalar>
 class StateMultibodyTpl;
 
+// soft state
+template <typename Scalar>
+class StateSoftMultibodyTpl;
+
 // data collector
 template <typename Scalar>
 struct DataCollectorMultibodyTpl;
@@ -336,6 +340,11 @@ template <typename Scalar>
 class ImpulseModel3DTpl;
 template <typename Scalar>
 struct ImpulseData3DTpl;
+
+template <typename Scalar>
+class ImpulseModel2DTpl;
+template <typename Scalar>
+struct ImpulseData2DTpl;
 
 template <typename Scalar>
 struct ImpulseItemTpl;
@@ -473,7 +482,7 @@ typedef ImpulseModelAbstractTpl<double> ImpulseModelAbstract;
 typedef ImpulseDataAbstractTpl<double> ImpulseDataAbstract;
 
 enum ContactType { ContactUndefined, Contact1D, Contact2D, Contact3D, Contact6D };
-enum ImpulseType { ImpulseUndefined, Impulse3D, Impulse6D };
+enum ImpulseType { ImpulseUndefined, Impulse3D, Impulse6D, Impulse2D };
 
 typedef ContactItemTpl<double> ContactItem;
 typedef ContactModelMultipleTpl<double> ContactModelMultiple;
@@ -488,6 +497,8 @@ typedef ContactModel6DTpl<double> ContactModel6D;
 typedef ContactData6DTpl<double> ContactData6D;
 
 typedef StateMultibodyTpl<double> StateMultibody;
+typedef StateSoftMultibodyTpl<double> StateSoftMultibody;
+
 
 typedef DataCollectorMultibodyTpl<double> DataCollectorMultibody;
 typedef DataCollectorActMultibodyTpl<double> DataCollectorActMultibody;
@@ -501,6 +512,8 @@ typedef ImpulseModel6DTpl<double> ImpulseModel6D;
 typedef ImpulseData6DTpl<double> ImpulseData6D;
 typedef ImpulseModel3DTpl<double> ImpulseModel3D;
 typedef ImpulseData3DTpl<double> ImpulseData3D;
+typedef ImpulseModel2DTpl<double> ImpulseModel2D;
+typedef ImpulseData2DTpl<double> ImpulseData2D;
 typedef ImpulseItemTpl<double> ImpulseItem;
 typedef ImpulseModelMultipleTpl<double> ImpulseModelMultiple;
 typedef ImpulseDataMultipleTpl<double> ImpulseDataMultiple;

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // BSD 3-Clause License
 //
-// Copyright (C) 2019-2021, University of Edinburgh
+// Copyright (C) 2019-2022, LAAS-CNRS, University of Edinburgh
 // Copyright note valid unless otherwise stated in individual files.
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
@@ -17,6 +17,7 @@ void exposeMultibody() {
   exposeWrenchCone();
   exposeCoPSupport();
   exposeStateMultibody();
+  exposeStateSoftMultibody();
   exposeActuationFloatingBase();
   exposeActuationFull();
   exposeActuationModelMultiCopterBase();
@@ -72,6 +73,7 @@ void exposeMultibody() {
   exposeContact2D();
   exposeContact3D();
   exposeContact6D();
+  exposeImpulse2D();
   exposeImpulse3D();
   exposeImpulse6D();
 }

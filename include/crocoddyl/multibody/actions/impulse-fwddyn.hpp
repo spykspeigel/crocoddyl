@@ -68,7 +68,7 @@ class ActionModelImpulseFwdDynamicsTpl : public ActionModelAbstractTpl<_Scalar> 
   typedef ActionDataImpulseFwdDynamicsTpl<Scalar> Data;
   typedef MathBaseTpl<Scalar> MathBase;
   typedef CostModelSumTpl<Scalar> CostModelSum;
-  typedef StateMultibodyTpl<Scalar> StateMultibody;
+  typedef StateSoftMultibodyTpl<Scalar> StateSoftMultibody;
   typedef ActionDataAbstractTpl<Scalar> ActionDataAbstract;
   typedef ImpulseModelMultipleTpl<Scalar> ImpulseModelMultiple;
   typedef typename MathBase::VectorXs VectorXs;
@@ -210,11 +210,11 @@ struct ActionDataImpulseFwdDynamicsTpl : public ActionDataAbstractTpl<_Scalar> {
         pinocchio(pinocchio::DataTpl<Scalar>(model->get_pinocchio())),
         multibody(&pinocchio, model->get_impulses()->createData(&pinocchio)),
         costs(model->get_costs()->createData(&multibody)),
-        vnone(model->get_state()->get_nv()),
+        vnone(model->get_state()->get_nv()-2),
         Kinv(model->get_state()->get_nv() + model->get_impulses()->get_nc_total(),
              model->get_state()->get_nv() + model->get_impulses()->get_nc_total()),
         df_dx(model->get_impulses()->get_nc_total(), model->get_state()->get_ndx()),
-        dgrav_dq(model->get_state()->get_nv(), model->get_state()->get_nv()) {
+        dgrav_dq(model->get_state()->get_nv()-2, model->get_state()->get_nv()) {
     costs->shareMemory(this);
     vnone.setZero();
     Kinv.setZero();

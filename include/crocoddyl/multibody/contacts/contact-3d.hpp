@@ -150,14 +150,14 @@ struct ContactData3DTpl : public ContactDataAbstractTpl<_Scalar> {
   template <template <typename Scalar> class Model>
   ContactData3DTpl(Model<Scalar>* const model, pinocchio::DataTpl<Scalar>* const data)
       : Base(model, data),
-        fJf(6, model->get_state()->get_nv()),
-        v_partial_dq(6, model->get_state()->get_nv()),
-        a_partial_dq(6, model->get_state()->get_nv()),
-        a_partial_dv(6, model->get_state()->get_nv()),
-        a_partial_da(6, model->get_state()->get_nv()),
-        fXjdv_dq(6, model->get_state()->get_nv()),
-        fXjda_dq(6, model->get_state()->get_nv()),
-        fXjda_dv(6, model->get_state()->get_nv()) {
+        fJf(6, model->get_state()->get_nv()-2),
+        v_partial_dq(6, model->get_state()->get_nv()-2),
+        a_partial_dq(6, model->get_state()->get_nv()-2),
+        a_partial_dv(6, model->get_state()->get_nv()-2),
+        a_partial_da(6, model->get_state()->get_nv()-2),
+        fXjdv_dq(6, model->get_state()->get_nv()-2),
+        fXjda_dq(6, model->get_state()->get_nv()-2),
+        fXjda_dv(6, model->get_state()->get_nv()-2) {
     frame = model->get_id();
     jMf = model->get_state()->get_pinocchio()->frames[frame].placement;
     fXj = jMf.inverse().toActionMatrix();

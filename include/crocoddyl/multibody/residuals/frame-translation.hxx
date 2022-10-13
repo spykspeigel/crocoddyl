@@ -54,8 +54,9 @@ void ResidualModelFrameTranslationTpl<Scalar>::calcDiff(const boost::shared_ptr<
 
   // Compute the derivatives of the frame translation
   const std::size_t nv = state_->get_nv();
-  pinocchio::getFrameJacobian(*pin_model_.get(), *d->pinocchio, id_, pinocchio::LOCAL, d->fJf);
-  d->Rx.leftCols(nv).noalias() = d->pinocchio->oMf[id_].rotation() * d->fJf.template topRows<3>();
+  const std::size_t nv_l = 3;
+  pinocchio::getFrameJacobian(*pin_model_.get(), *d->pinocchio, id_, pinocchio::LOCAL, d->fJf.leftCols(nv_l));
+  d->Rx.leftCols(nv_l).noalias() = d->pinocchio->oMf[id_].rotation() * d->fJf.leftCols(nv_l).template topRows<3>();
   ;
 }
 
